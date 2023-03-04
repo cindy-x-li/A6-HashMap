@@ -1,9 +1,11 @@
-# Name:
-# OSU Email:
+# Name: Cindy Li
+# OSU Email: lici@oregonstate.edu
 # Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
-# Description:
+# Assignment: 6
+# Due Date: 3/17/2023
+# Description: The HashMap class is built on two ADTs: dynamic array for
+# the hash table and singly linked list (SLL) for each bucket. Key-value pairs
+# are stored in the SLL of its indexed bucket.
 
 
 from a6_include import (DynamicArray, LinkedList,

@@ -1,9 +1,11 @@
-# Name:
-# OSU Email:
+# Name: Cindy Li
+# OSU Email: lici@oregonstate.edu
 # Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
-# Description:
+# Assignment: 6
+# Due Date: 3/17/2023
+# Description: The HashMap class is build on a dynamic array and uses
+# open addressing, specifically quadratic probing, to stores key-value
+# pairs.
 
 from a6_include import (DynamicArray, DynamicArrayException, HashEntry,
                         hash_function_1, hash_function_2)
