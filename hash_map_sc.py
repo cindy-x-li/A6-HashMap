@@ -127,6 +127,7 @@ class HashMap:
         """
         for i in range(self._capacity):
             if self._buckets[i].length() != 0:
+                self._size -= self._buckets[i].length()
                 self._buckets[i] = LinkedList()
 
     def resize_table(self, new_capacity: int) -> None:
@@ -190,7 +191,7 @@ def find_mode(da: DynamicArray) -> (DynamicArray, int):
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-
+    '''
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -270,7 +271,7 @@ if __name__ == "__main__":
     print(m.get_size(), m.get_capacity())
     m.clear()
     print(m.get_size(), m.get_capacity())
-
+    '''
     print("\nPDF - resize example 1")
     print("----------------------")
     m = HashMap(23, hash_function_1)
