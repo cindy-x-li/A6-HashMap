@@ -89,6 +89,11 @@ class HashMap:
         return self._capacity
 
     # ------------------------------------------------------------------ #
+    def calc_index(self, key: str, cap: int = None) -> int:
+        if cap is None:
+            return self._hash_function(key) % self._capacity
+        else:
+            return self._hash_function(key) % cap
 
     def put(self, key: str, value: object) -> None:
         """Updates the key/value pair in the hash map. If the given key already exists,
@@ -142,7 +147,7 @@ class HashMap:
             for i in range(self._capacity):
                 if self._buckets[i].length() != 0:
                     for node in self._buckets[i]:
-                        index = self._hash_function(node.key) % new_capacity
+                        index = self.calc_index(node.key, new_capacity)
                         new_buckets[index].insert(node.key, node.value)
 
             self._buckets = new_buckets
@@ -150,34 +155,43 @@ class HashMap:
         else:
             return
 
-    def get(self, key: str):
+    def get(self, key: str) -> object:
+        """Returns the value associated with the given key
         """
-        TODO: Write this implementation
-        """
-        pass
+        index = self.calc_index(key)
+        node = self._buckets[index].contains(key)
+        if node:
+            return node.value
+        else:
+            return None
 
     def contains_key(self, key: str) -> bool:
         """Checks if a given key is in the hash map.
         Return true if key exists. Otherwise, False.
         """
-        index = self._hash_function(key) % self._capacity
-        if self._buckets[index].contains(key):
+        if self.get(key):
             return True
         else:
             return False
 
     def remove(self, key: str) -> None:
+        """Removes key/value pair from the hash map
         """
-        TODO: Write this implementation
-        """
-        pass
+        index = self.calc_index(key)
+        removed = self._buckets[index].remove(key)
+        if removed:
+            self._size -= 1
 
     def get_keys_and_values(self) -> DynamicArray:
+        """Returns a dynamic array where each index contains a tuple of a key/value pair
+        stored in the hash map. The order of the keys in the dynamic array does not matter.
         """
-        TODO: Write this implementation
-        """
-        pass
-
+        da = DynamicArray()
+        for i in range(self._capacity):
+            if self._buckets[i].length() != 0:
+                for node in self._buckets[i]:
+                    da.append((node.key, node.value))
+        return da
 
 def find_mode(da: DynamicArray) -> (DynamicArray, int):
     """
@@ -191,7 +205,7 @@ def find_mode(da: DynamicArray) -> (DynamicArray, int):
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-    '''
+
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -207,7 +221,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    '''
+    
     print("\nPDF - empty_buckets example 1")
     print("-----------------------------")
     m = HashMap(101, hash_function_1)
@@ -271,7 +285,7 @@ if __name__ == "__main__":
     print(m.get_size(), m.get_capacity())
     m.clear()
     print(m.get_size(), m.get_capacity())
-    '''
+    
     print("\nPDF - resize example 1")
     print("----------------------")
     m = HashMap(23, hash_function_1)
@@ -369,7 +383,7 @@ if __name__ == "__main__":
     m.remove('1')
     m.resize_table(2)
     print(m.get_keys_and_values())
-    '''
+
     '''
     print("\nPDF - find_mode example 1")
     print("-----------------------------")
