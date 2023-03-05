@@ -91,22 +91,36 @@ class HashMap:
     # ------------------------------------------------------------------ #
 
     def put(self, key: str, value: object) -> None:
+        """Updates the key/value pair in the hash map. If the given key already exists,
+        its associated value is updated to the new value. If the given key is absent,
+        a new key/value pair must be added.
         """
-        TODO: Write this implementation
-        """
-        pass
+        if self.table_load() >= 1:
+            self.resize_table(self._capacity*2)
+
+        index = self._hash_function(key) % self._capacity
+        sll_node = self._buckets[index].contains(key)
+        # if key/value already exists, value is updated. Size does not change.
+        if sll_node:
+            sll_node.value = value
+        else:
+            self._buckets[index].insert(key, value)
+            self._size += 1
 
     def empty_buckets(self) -> int:
+        """Returns the number of empty buckets in the hash table
         """
-        TODO: Write this implementation
-        """
-        pass
+        filled_buckets = 0
+        for i in range(self._capacity):
+            if self._buckets[i].length() != 0:
+                filled_buckets += 1
+
+        return self._capacity - filled_buckets
 
     def table_load(self) -> float:
+        """Returns the current hash table load factor.
         """
-        TODO: Write this implementation
-        """
-        pass
+        return self._size/self._capacity
 
     def clear(self) -> None:
         """
@@ -115,10 +129,20 @@ class HashMap:
         pass
 
     def resize_table(self, new_capacity: int) -> None:
+        """Changes the capacity of the internal hash table.
         """
-        TODO: Write this implementation
-        """
-        pass
+        if new_capacity >= 1:
+            new_hashmap = HashMap(new_capacity)
+            for i in range(self._capacity):
+                if self._buckets[i].length() != 0:
+                    for node in self._buckets[i]:
+                        new_hashmap.put(node.key, node.value)
+            self = new_hashmap
+            self._capacity = new_hashmap.get_capacity()
+        else:
+            return
+
+
 
     def get(self, key: str):
         """
@@ -127,10 +151,14 @@ class HashMap:
         pass
 
     def contains_key(self, key: str) -> bool:
+        """Checks if a given key is in the hash map.
+        Return true if key exists. Otherwise, False.
         """
-        TODO: Write this implementation
-        """
-        pass
+        index = self._hash_function(key) % self._capacity
+        if self._buckets[index].contains(key):
+            return True
+        else:
+            return False
 
     def remove(self, key: str) -> None:
         """
@@ -165,7 +193,7 @@ if __name__ == "__main__":
         m.put('str' + str(i), i * 100)
         if i % 25 == 24:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-
+    '''
     print("\nPDF - put example 2")
     print("-------------------")
     m = HashMap(41, hash_function_2)
@@ -284,7 +312,7 @@ if __name__ == "__main__":
     for i in range(200, 300, 21):
         print(i, m.get(str(i)), m.get(str(i)) == i * 10)
         print(i + 1, m.get(str(i + 1)), m.get(str(i + 1)) == (i + 1) * 10)
-
+    
     print("\nPDF - contains_key example 1")
     print("----------------------------")
     m = HashMap(53, hash_function_1)
@@ -298,7 +326,7 @@ if __name__ == "__main__":
     print(m.contains_key('key3'))
     m.remove('key3')
     print(m.contains_key('key3'))
-
+    
     print("\nPDF - contains_key example 2")
     print("----------------------------")
     m = HashMap(79, hash_function_2)
@@ -335,7 +363,8 @@ if __name__ == "__main__":
     m.remove('1')
     m.resize_table(2)
     print(m.get_keys_and_values())
-
+    '''
+    '''
     print("\nPDF - find_mode example 1")
     print("-----------------------------")
     da = DynamicArray(["apple", "apple", "grape", "melon", "peach"])
@@ -354,3 +383,4 @@ if __name__ == "__main__":
         da = DynamicArray(case)
         mode, frequency = find_mode(da)
         print(f"Input: {da}\nMode : {mode}, Frequency: {frequency}\n")
+    '''
