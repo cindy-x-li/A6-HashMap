@@ -123,26 +123,31 @@ class HashMap:
         return self._size/self._capacity
 
     def clear(self) -> None:
+        """Clears the contents of the hash map. Capacity is not affected.
         """
-        TODO: Write this implementation
-        """
-        pass
+        for i in range(self._capacity):
+            if self._buckets[i].length() != 0:
+                self._buckets[i] = LinkedList()
 
     def resize_table(self, new_capacity: int) -> None:
         """Changes the capacity of the internal hash table.
         """
         if new_capacity >= 1:
-            new_hashmap = HashMap(new_capacity)
+            new_capacity = self._next_prime(new_capacity)
+            new_buckets = DynamicArray()
+            for _ in range(new_capacity):
+                new_buckets.append(LinkedList())
+
             for i in range(self._capacity):
                 if self._buckets[i].length() != 0:
                     for node in self._buckets[i]:
-                        new_hashmap.put(node.key, node.value)
-            self = new_hashmap
-            self._capacity = new_hashmap.get_capacity()
+                        index = self._hash_function(node.key) % new_capacity
+                        new_buckets[index].insert(node.key, node.value)
+
+            self._buckets = new_buckets
+            self._capacity = new_buckets.length()
         else:
             return
-
-
 
     def get(self, key: str):
         """
@@ -193,7 +198,7 @@ if __name__ == "__main__":
         m.put('str' + str(i), i * 100)
         if i % 25 == 24:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    '''
+
     print("\nPDF - put example 2")
     print("-------------------")
     m = HashMap(41, hash_function_2)
@@ -201,7 +206,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-
+    '''
     print("\nPDF - empty_buckets example 1")
     print("-----------------------------")
     m = HashMap(101, hash_function_1)
