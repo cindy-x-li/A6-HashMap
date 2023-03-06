@@ -86,18 +86,39 @@ class HashMap:
         return self._capacity
 
     # ------------------------------------------------------------------ #
+    def calc_index(self, key: str, cap: int = None) -> int:
+        if cap is None:
+            return self._hash_function(key) % self._capacity
+        else:
+            return self._hash_function(key) % cap
+
+    def quad_prob(self, initial_index: int, j: int) -> int:
+        return (initial_index + j**2) % self._capacity
 
     def put(self, key: str, value: object) -> None:
+        """Updates the key/value pair in the hash map. If the given key already exists,
+        its associated value is updated to the new value. If the given key is absent,
+        a new key/value pair must be added.
         """
-        TODO: Write this implementation
-        """
-        pass
+        if self.table_load() >= 0.5:
+            self.resize_table(self._capacity * 2)
+
+        index = self.calc_index()
+        if self._buckets[index] is None:
+            self._buckets[index] = value
+        else:
+            power = 1
+            quad_index = self.quad_prob(index, power)
+            while self._buckets[quad_index] is not None:
+                power += 1
+                quad_index = self.quad_prob(index, power)
+
+
 
     def table_load(self) -> float:
+        """Returns the current hash table load factor.
         """
-        TODO: Write this implementation
-        """
-        pass
+        return self._size/self._capacity
 
     def empty_buckets(self) -> int:
         """
