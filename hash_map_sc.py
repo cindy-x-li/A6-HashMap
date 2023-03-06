@@ -138,22 +138,25 @@ class HashMap:
     def resize_table(self, new_capacity: int) -> None:
         """Changes the capacity of the internal hash table.
         """
-        if new_capacity >= 1:
-            new_capacity = self._next_prime(new_capacity)
-            new_buckets = DynamicArray()
-            for _ in range(new_capacity):
-                new_buckets.append(LinkedList())
-
-            for i in range(self._capacity):
-                if self._buckets[i].length() != 0:
-                    for node in self._buckets[i]:
-                        index = self.calc_index(node.key, new_capacity)
-                        new_buckets[index].insert(node.key, node.value)
-
-            self._buckets = new_buckets
-            self._capacity = new_buckets.length()
-        else:
+        if new_capacity < 1:
             return
+
+        if new_capacity <= self._size:
+            new_capacity = self._size + 1
+
+        new_capacity = self._next_prime(new_capacity)
+        new_buckets = DynamicArray()
+        for _ in range(new_capacity):
+            new_buckets.append(LinkedList())
+
+        for i in range(self._capacity):
+            if self._buckets[i].length() != 0:
+                for node in self._buckets[i]:
+                    index = self.calc_index(node.key, new_capacity)
+                    new_buckets[index].insert(node.key, node.value)
+
+        self._buckets = new_buckets
+        self._capacity = new_buckets.length()
 
     def get(self, key: str) -> object:
         """Returns the value associated with the given key
@@ -169,7 +172,7 @@ class HashMap:
         """Checks if a given key is in the hash map.
         Return true if key exists. Otherwise, False.
         """
-        if self.get(key):
+        if self.get(key) is not None:
             return True
         else:
             return False
@@ -220,6 +223,7 @@ def find_mode(da: DynamicArray) -> (DynamicArray, int):
         map.put(key, count)
 
     return da_mode, curr_mode
+
 
 # ------------------- BASIC TESTING ---------------------------------------- #
 
@@ -390,7 +394,7 @@ if __name__ == "__main__":
     m.remove('key1')
     print(m.get('key1'))
     m.remove('key4')
-
+    '''
     print("\nPDF - get_keys_and_values example 1")
     print("------------------------")
     m = HashMap(11, hash_function_2)
@@ -403,7 +407,6 @@ if __name__ == "__main__":
     m.resize_table(2)
     print(m.get_keys_and_values())
 
-    '''
     print("\nPDF - find_mode example 1")
     print("-----------------------------")
     da = DynamicArray(["apple", "apple", "grape", "melon", "peach"])
