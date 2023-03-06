@@ -193,19 +193,38 @@ class HashMap:
                     da.append((node.key, node.value))
         return da
 
-def find_mode(da: DynamicArray) -> (DynamicArray, int):
-    """
-    TODO: Write this implementation
-    """
-    # if you'd like to use a hash map,
-    # use this instance of your Separate Chaining HashMap
-    map = HashMap()
 
+def find_mode(da: DynamicArray) -> (DynamicArray, int):
+    """Receives a dynamic array in either sorted or unsorted order.
+    Returns a tuple of an array of the mode(s) and its frequency.
+    """
+    map = HashMap()
+    da_mode = DynamicArray()
+    curr_mode = 1
+    for i in range(da.length()):
+        key = da[i]
+        count = 1
+
+        if map.contains_key(key):
+            count = int(map.get(key))
+            count += 1
+            if curr_mode < count:
+                da_mode = DynamicArray()
+                curr_mode = count
+            if curr_mode == count:
+                da_mode.append(key)
+        else:
+            if count == curr_mode:
+                da_mode.append(key)
+
+        map.put(key, count)
+
+    return da_mode, curr_mode
 
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-
+    '''
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -403,4 +422,4 @@ if __name__ == "__main__":
         da = DynamicArray(case)
         mode, frequency = find_mode(da)
         print(f"Input: {da}\nMode : {mode}, Frequency: {frequency}\n")
-    '''
+
