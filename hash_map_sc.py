@@ -103,7 +103,7 @@ class HashMap:
         if self.table_load() >= 1:
             self.resize_table(self._capacity*2)
 
-        index = self._hash_function(key) % self._capacity
+        index = self.calc_index(key)
         sll_node = self._buckets[index].contains(key)
         # if key/value already exists, value is updated. Size does not change.
         if sll_node:
@@ -115,12 +115,12 @@ class HashMap:
     def empty_buckets(self) -> int:
         """Returns the number of empty buckets in the hash table
         """
-        filled_buckets = 0
+        empty = 0
         for i in range(self._capacity):
-            if self._buckets[i].length() != 0:
-                filled_buckets += 1
+            if self._buckets[i].length() == 0:
+                empty += 1
 
-        return self._capacity - filled_buckets
+        return empty
 
     def table_load(self) -> float:
         """Returns the current hash table load factor.
