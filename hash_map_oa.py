@@ -92,7 +92,7 @@ class HashMap:
         else:
             return self._hash_function(key) % cap
 
-    def quad_prob(self, initial_index: int, j: int) -> int:
+    def quad_probe(self, initial_index: int, j: int) -> int:
         return (initial_index + j**2) % self._capacity
 
     def put(self, key: str, value: object) -> None:
@@ -103,17 +103,25 @@ class HashMap:
         if self.table_load() >= 0.5:
             self.resize_table(self._capacity * 2)
 
-        index = self.calc_index()
+        # initial insertion
+        index = self.calc_index(key)
         if self._buckets[index] is None:
-            self._buckets[index] = value
+            self._buckets[index] = HashEntry(key, value)
+            self._size += 1
+        elif self._buckets[index].key == key:
+            self._buckets[index].value = value
         else:
-            power = 1
-            quad_index = self.quad_prob(index, power)
+            # insertion via quadratic probing starts after 1st attempt to insert fails
+            increment = 1
+            quad_index = self.quad_probe(index, increment)
             while self._buckets[quad_index] is not None:
-                power += 1
-                quad_index = self.quad_prob(index, power)
-
-
+                increment += 1
+                quad_index = self.quad_probe(index, increment)
+            if self._buckets[quad_index] is None:
+                self._buckets[quad_index] = HashEntry(key, value)
+                self._size += 1
+            elif self._buckets[quad_index].key == key:
+                self._buckets[quad_index].value = value
 
     def table_load(self) -> float:
         """Returns the current hash table load factor.
@@ -121,28 +129,64 @@ class HashMap:
         return self._size/self._capacity
 
     def empty_buckets(self) -> int:
+        """Returns the number of empty buckets in the hash table
         """
-        TODO: Write this implementation
-        """
-        pass
+        empty = 0
+        for i in range(self._capacity):
+            if self._buckets[i] is None:
+                empty += 1
+
+        return empty
 
     def resize_table(self, new_capacity: int) -> None:
+        """Changes the capacity of the internal hash table.
         """
-        TODO: Write this implementation
-        """
-        pass
+        if new_capacity < self._size:
+            return
+
+        if new_capacity != 2:
+            new_capacity = self._next_prime(new_capacity)
+        self._capacity = new_capacity
+        prev_buckets = self._buckets
+        self._buckets = DynamicArray()
+        self._size = 0
+
+        for _ in range(self._capacity):
+            self._buckets.append(None)
+
+        for i in range(prev_buckets.length()):
+            entry = prev_buckets[i]
+            if entry is not None:
+                self.put(entry.key, entry.value)
 
     def get(self, key: str) -> object:
+        """Returns the value associated with the given key
         """
-        TODO: Write this implementation
-        """
-        pass
+        index = self.calc_index(key)
+        if self._buckets[index].key == key:
+            return self._buckets[index].value
+        else:
+            if self._buckets[index] is None:
+                return None
+            # search by quadratic probing
+            increment = 1
+            quad_index = self.quad_probe(index, increment)
+            while self._buckets[quad_index] != key and self._buckets[quad_index] is not None:
+                increment += 1
+                quad_index = self.quad_probe(index, increment)
+            if self._buckets[quad_index] is None:
+                return None
+            else:
+                return self._buckets[index].value
 
     def contains_key(self, key: str) -> bool:
-        """
-        TODO: Write this implementation
-        """
-        pass
+        """Checks if a given key is in the hash map.
+                Return true if key exists. Otherwise, False.
+                """
+        if self.get(key) is not None:
+            return True
+        else:
+            return False
 
     def remove(self, key: str) -> None:
         """
@@ -151,10 +195,12 @@ class HashMap:
         pass
 
     def clear(self) -> None:
-        """
-        TODO: Write this implementation
-        """
-        pass
+        """Clears the contents of the hash map. Capacity is not affected.
+                """
+        for i in range(self._capacity):
+            if self._buckets[i] is not None:
+                self._size -= self._buckets[i]
+                self._buckets[i] = None
 
     def get_keys_and_values(self) -> DynamicArray:
         """
@@ -194,7 +240,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-
+    '''
     print("\nPDF - table_load example 1")
     print("--------------------------")
     m = HashMap(101, hash_function_1)
@@ -383,3 +429,4 @@ if __name__ == "__main__":
     print(m)
     for item in m:
         print('K:', item.key, 'V:', item.value)
+    '''
