@@ -141,22 +141,19 @@ class HashMap:
         if new_capacity < 1:
             return
 
-        if new_capacity <= self._size:
-            new_capacity = self._size + 1
-
         new_capacity = self._next_prime(new_capacity)
-        new_buckets = DynamicArray()
+        self._capacity = new_capacity
+        prev_buckets = self._buckets
+        self._buckets = DynamicArray()
+        self._size = 0
+
         for _ in range(new_capacity):
-            new_buckets.append(LinkedList())
+            self._buckets.append(LinkedList())
 
-        for i in range(self._capacity):
-            if self._buckets[i].length() != 0:
-                for node in self._buckets[i]:
-                    index = self.calc_index(node.key, new_capacity)
-                    new_buckets[index].insert(node.key, node.value)
-
-        self._buckets = new_buckets
-        self._capacity = new_buckets.length()
+        for i in range(prev_buckets.length()):
+            if prev_buckets[i].length() != 0:
+                for node in prev_buckets[i]:
+                    self.put(node.key, node.value)
 
     def get(self, key: str) -> object:
         """Returns the value associated with the given key
@@ -228,7 +225,7 @@ def find_mode(da: DynamicArray) -> (DynamicArray, int):
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-    '''
+
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -244,7 +241,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    
+    '''
     print("\nPDF - empty_buckets example 1")
     print("-----------------------------")
     m = HashMap(101, hash_function_1)
@@ -338,7 +335,7 @@ if __name__ == "__main__":
             # NOT inserted keys must be absent
             result &= not m.contains_key(str(key + 1))
         print(capacity, result, m.get_size(), m.get_capacity(), round(m.table_load(), 2))
-
+    
     print("\nPDF - get example 1")
     print("-------------------")
     m = HashMap(31, hash_function_1)
@@ -394,7 +391,7 @@ if __name__ == "__main__":
     m.remove('key1')
     print(m.get('key1'))
     m.remove('key4')
-    '''
+
     print("\nPDF - get_keys_and_values example 1")
     print("------------------------")
     m = HashMap(11, hash_function_2)
@@ -406,7 +403,7 @@ if __name__ == "__main__":
     m.remove('1')
     m.resize_table(2)
     print(m.get_keys_and_values())
-
+    
     print("\nPDF - find_mode example 1")
     print("-----------------------------")
     da = DynamicArray(["apple", "apple", "grape", "melon", "peach"])
@@ -425,4 +422,4 @@ if __name__ == "__main__":
         da = DynamicArray(case)
         mode, frequency = find_mode(da)
         print(f"Input: {da}\nMode : {mode}, Frequency: {frequency}\n")
-
+    '''
