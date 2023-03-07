@@ -141,7 +141,8 @@ class HashMap:
         if new_capacity < 1:
             return
 
-        new_capacity = self._next_prime(new_capacity)
+        if new_capacity != 2:
+            new_capacity = self._next_prime(new_capacity)
         self._capacity = new_capacity
         prev_buckets = self._buckets
         self._buckets = DynamicArray()
@@ -241,7 +242,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    '''
+
     print("\nPDF - empty_buckets example 1")
     print("-----------------------------")
     m = HashMap(101, hash_function_1)
@@ -422,4 +423,4 @@ if __name__ == "__main__":
         da = DynamicArray(case)
         mode, frequency = find_mode(da)
         print(f"Input: {da}\nMode : {mode}, Frequency: {frequency}\n")
-    '''
+
