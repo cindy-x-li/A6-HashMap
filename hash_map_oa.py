@@ -117,6 +117,7 @@ class HashMap:
             quad_index = self.quad_probe(index, increment)
             while self._buckets[quad_index] is not None:
                 if self._buckets[quad_index].is_tombstone is True:
+                    self._buckets[quad_index].is_tombstone = False
                     break
                 elif self._buckets[quad_index].key == key:
                     self._buckets[quad_index].value = value
@@ -166,22 +167,26 @@ class HashMap:
     def get(self, key: str) -> object:
         """Returns the value associated with the given key
         """
+
+        # initial search
         index = self.calc_index(key)
-        if self._buckets[index].key == key:
+        if self._buckets[index] is None:
+            return None
+        elif self._buckets[index].key == key and self._buckets[index].is_tombstone is False:
             return self._buckets[index].value
         else:
-            if self._buckets[index] is None:
-                return None
-            # search by quadratic probing
+            # quadratic probing starts after 1st search attempt fails
             increment = 1
             quad_index = self.quad_probe(index, increment)
-            while self._buckets[quad_index] != key and self._buckets[quad_index] is not None:
+            while self._buckets[quad_index] is not None:
+                if self._buckets[quad_index].is_tombstone is True:
+                    return None
+                elif self._buckets[quad_index].key == key:
+                    return self._buckets[quad_index].value
                 increment += 1
                 quad_index = self.quad_probe(index, increment)
-            if self._buckets[quad_index] is None:
-                return None
-            else:
-                return self._buckets[index].value
+
+        return None
 
     def contains_key(self, key: str) -> bool:
         """Checks if a given key is in the hash map.
@@ -193,18 +198,33 @@ class HashMap:
             return False
 
     def remove(self, key: str) -> None:
+        """Removes key/value pair from the hash map
         """
-        TODO: Write this implementation
-        """
-        pass
+        index = self.calc_index(key)
+        if self._buckets[index] is None:
+            return
+        elif self._buckets[index].key == key:
+            self._buckets[index].is_tombstone = True
+            self._size -= 1
+        else:
+            # quadratic probing starts after 1st search attempt fails
+            increment = 1
+            quad_index = self.quad_probe(index, increment)
+            while self._buckets[quad_index] is not None:
+                if self._buckets[quad_index].key == key:
+                    self._buckets[quad_index].is_tombstone = True
+                    self._size -= 1
+                    break
+                increment += 1
+                quad_index = self.quad_probe(index, increment)
 
     def clear(self) -> None:
         """Clears the contents of the hash map. Capacity is not affected.
                 """
         for i in range(self._capacity):
             if self._buckets[i] is not None:
-                self._size -= self._buckets[i]
                 self._buckets[i] = None
+                self._size -= 1
 
     def get_keys_and_values(self) -> DynamicArray:
         """
@@ -244,7 +264,8 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    
+    '''
+    '''
     print("\nPDF - table_load example 1")
     print("--------------------------")
     m = HashMap(101, hash_function_1)
@@ -285,6 +306,7 @@ if __name__ == "__main__":
         if i % 30 == 0:
             print(m.empty_buckets(), m.get_size(), m.get_capacity())
     '''
+    '''
     print("\nPDF - resize example 1")
     print("----------------------")
     m = HashMap(23, hash_function_1)
@@ -319,6 +341,7 @@ if __name__ == "__main__":
             result &= not m.contains_key(str(key + 1))
         print(capacity, result, m.get_size(), m.get_capacity(), round(m.table_load(), 2))
     '''
+    '''
     print("\nPDF - get example 1")
     print("-------------------")
     m = HashMap(31, hash_function_1)
@@ -335,7 +358,7 @@ if __name__ == "__main__":
     for i in range(200, 300, 21):
         print(i, m.get(str(i)), m.get(str(i)) == i * 10)
         print(i + 1, m.get(str(i + 1)), m.get(str(i + 1)) == (i + 1) * 10)
-
+    
     print("\nPDF - contains_key example 1")
     print("----------------------------")
     m = HashMap(11, hash_function_1)
@@ -364,7 +387,7 @@ if __name__ == "__main__":
         # NOT inserted keys must be absent
         result &= not m.contains_key(str(key + 1))
     print(result)
-
+    
     print("\nPDF - remove example 1")
     print("----------------------")
     m = HashMap(53, hash_function_1)
@@ -374,7 +397,7 @@ if __name__ == "__main__":
     m.remove('key1')
     print(m.get('key1'))
     m.remove('key4')
-
+    '''
     print("\nPDF - clear example 1")
     print("---------------------")
     m = HashMap(101, hash_function_1)
@@ -398,7 +421,7 @@ if __name__ == "__main__":
     print(m.get_size(), m.get_capacity())
     m.clear()
     print(m.get_size(), m.get_capacity())
-
+    '''
     print("\nPDF - get_keys_and_values example 1")
     print("------------------------")
     m = HashMap(11, hash_function_2)
