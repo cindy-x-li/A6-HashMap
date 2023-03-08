@@ -108,6 +108,7 @@ class HashMap:
         if self._buckets[index] is None:
             self._buckets[index] = HashEntry(key, value)
             self._size += 1
+        # checks for already existing key
         elif self._buckets[index].key == key:
             self._buckets[index].value = value
         else:
@@ -115,13 +116,16 @@ class HashMap:
             increment = 1
             quad_index = self.quad_probe(index, increment)
             while self._buckets[quad_index] is not None:
+                if self._buckets[quad_index].is_tombstone is True:
+                    break
+                elif self._buckets[quad_index].key == key:
+                    self._buckets[quad_index].value = value
+                    return
                 increment += 1
                 quad_index = self.quad_probe(index, increment)
-            if self._buckets[quad_index] is None:
-                self._buckets[quad_index] = HashEntry(key, value)
-                self._size += 1
-            elif self._buckets[quad_index].key == key:
-                self._buckets[quad_index].value = value
+
+            self._buckets[quad_index] = HashEntry(key, value)
+            self._size += 1
 
     def table_load(self) -> float:
         """Returns the current hash table load factor.
@@ -224,7 +228,7 @@ class HashMap:
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-
+    '''
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -232,7 +236,7 @@ if __name__ == "__main__":
         m.put('str' + str(i), i * 100)
         if i % 25 == 24:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-
+    
     print("\nPDF - put example 2")
     print("-------------------")
     m = HashMap(41, hash_function_2)
@@ -240,7 +244,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    '''
+    
     print("\nPDF - table_load example 1")
     print("--------------------------")
     m = HashMap(101, hash_function_1)
@@ -259,7 +263,7 @@ if __name__ == "__main__":
         m.put('key' + str(i), i * 100)
         if i % 10 == 0:
             print(round(m.table_load(), 2), m.get_size(), m.get_capacity())
-
+    
     print("\nPDF - empty_buckets example 1")
     print("-----------------------------")
     m = HashMap(101, hash_function_1)
@@ -280,7 +284,7 @@ if __name__ == "__main__":
         m.put('key' + str(i), i * 100)
         if i % 30 == 0:
             print(m.empty_buckets(), m.get_size(), m.get_capacity())
-
+    '''
     print("\nPDF - resize example 1")
     print("----------------------")
     m = HashMap(23, hash_function_1)
@@ -314,7 +318,7 @@ if __name__ == "__main__":
             # NOT inserted keys must be absent
             result &= not m.contains_key(str(key + 1))
         print(capacity, result, m.get_size(), m.get_capacity(), round(m.table_load(), 2))
-
+    '''
     print("\nPDF - get example 1")
     print("-------------------")
     m = HashMap(31, hash_function_1)
