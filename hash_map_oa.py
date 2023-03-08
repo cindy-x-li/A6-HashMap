@@ -108,9 +108,14 @@ class HashMap:
         if self._buckets[index] is None:
             self._buckets[index] = HashEntry(key, value)
             self._size += 1
+        elif self._buckets[index].is_tombstone is True:
+            self._buckets[index].is_tombstone = False
+            self._size += 1
         # checks for already existing key
-        elif self._buckets[index].key == key:
+        elif self._buckets[index].key == key and self._buckets[index].is_tombstone is False:
             self._buckets[index].value = value
+        # checks for tombstones
+
         else:
             # insertion via quadratic probing starts after 1st attempt to insert fails
             increment = 1
@@ -204,17 +209,23 @@ class HashMap:
         if self._buckets[index] is None:
             return
         elif self._buckets[index].key == key:
-            self._buckets[index].is_tombstone = True
-            self._size -= 1
+            if self._buckets[index].is_tombstone is False:
+                self._buckets[index].is_tombstone = True
+                self._size -= 1
+            else:
+                return
         else:
             # quadratic probing starts after 1st search attempt fails
             increment = 1
             quad_index = self.quad_probe(index, increment)
             while self._buckets[quad_index] is not None:
                 if self._buckets[quad_index].key == key:
-                    self._buckets[quad_index].is_tombstone = True
-                    self._size -= 1
-                    break
+                    if self._buckets[quad_index].is_tombstone is False:
+                        self._buckets[quad_index].is_tombstone = True
+                        self._size -= 1
+                        break
+                    else:
+                        return
                 increment += 1
                 quad_index = self.quad_probe(index, increment)
 
@@ -339,6 +350,13 @@ if __name__ == "__main__":
         m.put(str(key), key * 42)
     print(m.get_size(), m.get_capacity())
 
+    m.put('some key', 'some value')
+    m.remove('some key')
+    print(m.get_size())
+    m.remove('some key')
+    print(m.get_size())
+    # m.put('some key', 'some value')
+
     for capacity in range(111, 1000, 117):
         m.resize_table(capacity)
 
@@ -456,7 +474,7 @@ if __name__ == "__main__":
     m.remove('1')
     m.resize_table(12)
     print(m.get_keys_and_values())
-    
+
     print("\nPDF - __iter__(), __next__() example 1")
     print("---------------------")
     m = HashMap(10, hash_function_1)
