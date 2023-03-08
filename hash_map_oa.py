@@ -179,9 +179,9 @@ class HashMap:
             increment = 1
             quad_index = self.quad_probe(index, increment)
             while self._buckets[quad_index] is not None:
-                if self._buckets[quad_index].is_tombstone is True:
-                    return None
-                elif self._buckets[quad_index].key == key:
+                # if self._buckets[quad_index].is_tombstone is True:
+                #     return None
+                if self._buckets[quad_index].key == key:
                     return self._buckets[quad_index].value
                 increment += 1
                 quad_index = self.quad_probe(index, increment)
@@ -248,7 +248,7 @@ class HashMap:
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-    '''
+
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -264,8 +264,7 @@ if __name__ == "__main__":
         m.put('str' + str(i // 3), i * 100)
         if i % 10 == 9:
             print(m.empty_buckets(), round(m.table_load(), 2), m.get_size(), m.get_capacity())
-    '''
-    '''
+
     print("\nPDF - table_load example 1")
     print("--------------------------")
     m = HashMap(101, hash_function_1)
@@ -305,8 +304,7 @@ if __name__ == "__main__":
         m.put('key' + str(i), i * 100)
         if i % 30 == 0:
             print(m.empty_buckets(), m.get_size(), m.get_capacity())
-    '''
-    '''
+
     print("\nPDF - resize example 1")
     print("----------------------")
     m = HashMap(23, hash_function_1)
@@ -332,16 +330,20 @@ if __name__ == "__main__":
 
         m.put('some key', 'some value')
         result = m.contains_key('some key')
+        # print(result)
         m.remove('some key')
 
         for key in keys:
             # all inserted keys must be present
             result &= m.contains_key(str(key))
+            if result is False:
+                print(key, capacity, result)
             # NOT inserted keys must be absent
             result &= not m.contains_key(str(key + 1))
+            if result is False:
+                print(key, "not", capacity, result)
         print(capacity, result, m.get_size(), m.get_capacity(), round(m.table_load(), 2))
-    '''
-    '''
+
     print("\nPDF - get example 1")
     print("-------------------")
     m = HashMap(31, hash_function_1)
@@ -397,7 +399,7 @@ if __name__ == "__main__":
     m.remove('key1')
     print(m.get('key1'))
     m.remove('key4')
-    '''
+    
     print("\nPDF - clear example 1")
     print("---------------------")
     m = HashMap(101, hash_function_1)
