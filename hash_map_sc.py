@@ -5,8 +5,12 @@
 # Due Date: 3/17/2023
 # Description: The HashMap class is built on two ADTs: dynamic array for
 # the hash table and singly linked list (SLL) for each bucket. Key-value pairs
-# are stored in the SLL of its indexed bucket.
-
+# are stored in the SLL of its indexed bucket. Class methods include checking
+# the table load factor, getting info on the number of empty buckets, resizing
+# the table, retrieving (i.e. getting) a value using a key, checking if table
+# contains a key,  removing stored data, clearing the table, and getting a
+# dynamic array of key/value pairs. There is a method out of the class that uses
+# the Hashmap class to find the most occurring string and its frequency.
 
 from a6_include import (DynamicArray, LinkedList,
                         hash_function_1, hash_function_2)
@@ -90,27 +94,28 @@ class HashMap:
 
     # ------------------------------------------------------------------ #
     def calc_index(self, key: str) -> int:
+        """ Calculates the appropriate array index using provided key.
+        """
         return self._hash_function(key) % self._capacity
 
     def put(self, key: str, value: object) -> None:
-        """Updates the key/value pair in the hash map. If the given key already exists,
-        its associated value is updated to the new value. If the given key is absent,
-        a new key/value pair must be added.
+        """ Updates the key/value pair. If the given key already exists, its
+        value is updated to the new value. If absent, a new key/value pair is added.
         """
         if self.table_load() >= 1:
             self.resize_table(self._capacity*2)
 
         index = self.calc_index(key)
-        sll_node = self._buckets[index].contains(key)
+        node = self._buckets[index].contains(key)
         # if key/value already exists, value is updated. Size does not change.
-        if sll_node:
-            sll_node.value = value
+        if node:
+            node.value = value
         else:
             self._buckets[index].insert(key, value)
             self._size += 1
 
     def empty_buckets(self) -> int:
-        """Returns the number of empty buckets in the hash table
+        """Returns the number of empty buckets in the hash table.
         """
         empty = 0
         for i in range(self._capacity):
@@ -125,10 +130,11 @@ class HashMap:
         return self._size/self._capacity
 
     def clear(self) -> None:
-        """Clears the contents of the hash map. Capacity is not affected.
+        """Clears the contents. Capacity is not affected.
         """
         for i in range(self._capacity):
             if self._buckets[i].length() != 0:
+                # size is updated to reflect SLL's deleted nodes
                 self._size -= self._buckets[i].length()
                 self._buckets[i] = LinkedList()
 
@@ -138,23 +144,27 @@ class HashMap:
         if new_capacity < 1:
             return
 
+        prev_buckets = self._buckets
+
+        # determines a prime number capacity. Note: 2 is a prime number
         if new_capacity != 2:
             new_capacity = self._next_prime(new_capacity)
-        self._capacity = new_capacity
-        prev_buckets = self._buckets
-        self._buckets = DynamicArray()
-        self._size = 0
 
+        # creates new table
+        self._buckets = DynamicArray()
+        self._capacity = new_capacity
+        self._size = 0
         for _ in range(self._capacity):
             self._buckets.append(LinkedList())
 
+        # copies over nodes from previous to new table
         for i in range(prev_buckets.length()):
             if prev_buckets[i].length() != 0:
                 for node in prev_buckets[i]:
                     self.put(node.key, node.value)
 
     def get(self, key: str) -> object:
-        """Returns the value associated with the given key
+        """Returns the value associated with the given key.
         """
         index = self.calc_index(key)
         node = self._buckets[index].contains(key)
@@ -164,8 +174,7 @@ class HashMap:
             return None
 
     def contains_key(self, key: str) -> bool:
-        """Checks if a given key is in the hash map.
-        Return true if key exists. Otherwise, False.
+        """Return true if key exists. Otherwise, False.
         """
         if self.get(key) is not None:
             return True
@@ -181,8 +190,8 @@ class HashMap:
             self._size -= 1
 
     def get_keys_and_values(self) -> DynamicArray:
-        """Returns a dynamic array where each index contains a tuple of a key/value pair
-        stored in the hash map. The order of the keys in the dynamic array does not matter.
+        """Returns a dynamic array where each index contains a tuple of a
+        key/value pair stored in the hash map. Order of keys does not matter.
         """
         da = DynamicArray()
         for i in range(self._capacity):
@@ -198,20 +207,23 @@ def find_mode(da: DynamicArray) -> (DynamicArray, int):
     """
     map = HashMap()
     da_mode = DynamicArray()
+    # set to the lowest possible mode
     curr_mode = 1
     for i in range(da.length()):
         key = da[i]
         count = 1
-
         if map.contains_key(key):
             count = int(map.get(key))
             count += 1
+            # when there is a new mode (other than 1)
             if curr_mode < count:
                 da_mode = DynamicArray()
                 curr_mode = count
+            # values with the same mode
             if curr_mode == count:
                 da_mode.append(key)
         else:
+            # for appending values with modes of 1
             if count == curr_mode:
                 da_mode.append(key)
 
