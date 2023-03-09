@@ -145,7 +145,7 @@ class HashMap:
         return self._size/self._capacity
 
     def empty_buckets(self) -> int:
-        """Returns the number of empty buckets in the hash table
+        """Returns the number of empty buckets in the hash table.
         """
         empty = 0
         for i in range(self._capacity):
@@ -167,7 +167,7 @@ class HashMap:
         if new_capacity != 2:
             new_capacity = self._next_prime(new_capacity)
 
-        # creating new table
+        # creates new table
         self._buckets = DynamicArray()
         self._capacity = new_capacity
         self._size = 0
@@ -212,7 +212,7 @@ class HashMap:
             return False
 
     def remove(self, key: str) -> None:
-        """Removes key/value pair from the hash map
+        """Removes key/value pair from the hash map.
         """
         index = self.calc_index(key)
         if self._buckets[index] is None:
@@ -250,7 +250,7 @@ class HashMap:
 
     def get_keys_and_values(self) -> DynamicArray:
         """Returns a dynamic array where each index contains a tuple of a
-        key/value pair stored in the hash map. Order does not matter.
+        key/value pair stored in the hash map. Order of keys does not matter.
         """
         da = DynamicArray()
         for i in range(self._capacity):
