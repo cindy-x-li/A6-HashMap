@@ -5,7 +5,11 @@
 # Due Date: 3/17/2023
 # Description: The HashMap class is build on a dynamic array and uses
 # open addressing, specifically quadratic probing, to stores key-value
-# pairs.
+# pairs. Class methods include checking the table load factor, getting
+# info on the number of empty buckets, resizing the table, retrieving
+# (i.e. getting) a value using a key, checking if table contains a key,
+# removing stored data, clearing the table, getting a dynamic array of
+# key/value pairs and iterating through Hashmap class.
 
 from a6_include import (DynamicArray, DynamicArrayException, HashEntry,
                         hash_function_1, hash_function_2)
@@ -86,51 +90,53 @@ class HashMap:
         return self._capacity
 
     # ------------------------------------------------------------------ #
-    def calc_index(self, key: str, cap: int = None) -> int:
-        if cap is None:
-            return self._hash_function(key) % self._capacity
-        else:
-            return self._hash_function(key) % cap
+    def calc_index(self, key: str) -> int:
+        """ Calculates the appropriate array index using provided key.
+        """
+        return self._hash_function(key) % self._capacity
 
     def quad_probe(self, initial_index: int, j: int) -> int:
+        """ Calculates the appropriate array index using quadratic probing methodology.
+        """
         return (initial_index + j**2) % self._capacity
 
     def put(self, key: str, value: object) -> None:
-        """Updates the key/value pair in the hash map. If the given key already exists,
-        its associated value is updated to the new value. If the given key is absent,
-        a new key/value pair must be added.
+        """ Updates the key/value pair. If the given key already exists, its
+        value is updated to the new value. If absent, a new key/value pair is added.
         """
         if self.table_load() >= 0.5:
             self.resize_table(self._capacity * 2)
 
         # initial insertion
-        index = self.calc_index(key)
-        if self._buckets[index] is None:
-            self._buckets[index] = HashEntry(key, value)
+        i = self.calc_index(key)
+        if self._buckets[i] is None:
+            self._buckets[i] = HashEntry(key, value)
             self._size += 1
-        elif self._buckets[index].is_tombstone is True:
-            self._buckets[index].is_tombstone = False
+        # tombstones are valid for new entries
+        elif self._buckets[i].is_tombstone is True:
+            self._buckets[i].is_tombstone = False
             self._size += 1
-        # checks for already existing key
-        elif self._buckets[index].key == key and self._buckets[index].is_tombstone is False:
-            self._buckets[index].value = value
-        # checks for tombstones
+        # checks for already existing key to update value
+        elif self._buckets[i].key == key and self._buckets[i].is_tombstone is False:
+            self._buckets[i].value = value
 
         else:
             # insertion via quadratic probing starts after 1st attempt to insert fails
             increment = 1
-            quad_index = self.quad_probe(index, increment)
-            while self._buckets[quad_index] is not None:
-                if self._buckets[quad_index].is_tombstone is True:
-                    self._buckets[quad_index].is_tombstone = False
+            quad_i = self.quad_probe(i, increment)
+            while self._buckets[quad_i] is not None:
+                if self._buckets[quad_i].is_tombstone is True:
+                    # not a tombstone when new value is inserted
+                    self._buckets[quad_i].is_tombstone = False
                     break
-                elif self._buckets[quad_index].key == key:
-                    self._buckets[quad_index].value = value
+                # checks for already existing key to update value
+                elif self._buckets[quad_i].key == key:
+                    self._buckets[quad_i].value = value
                     return
                 increment += 1
-                quad_index = self.quad_probe(index, increment)
+                quad_i = self.quad_probe(i, increment)
 
-            self._buckets[quad_index] = HashEntry(key, value)
+            self._buckets[quad_i] = HashEntry(key, value)
             self._size += 1
 
     def table_load(self) -> float:
@@ -149,21 +155,26 @@ class HashMap:
         return empty
 
     def resize_table(self, new_capacity: int) -> None:
-        """Changes the capacity of the internal hash table.
+        """ Changes the capacity of the internal hash table and
+        rehashes entries to insert into the new table.
         """
         if new_capacity < self._size:
             return
 
+        prev_buckets = self._buckets
+
+        # determines a prime number capacity. Note: 2 is a prime number
         if new_capacity != 2:
             new_capacity = self._next_prime(new_capacity)
-        self._capacity = new_capacity
-        prev_buckets = self._buckets
-        self._buckets = DynamicArray()
-        self._size = 0
 
+        # creating new table
+        self._buckets = DynamicArray()
+        self._capacity = new_capacity
+        self._size = 0
         for _ in range(self._capacity):
             self._buckets.append(None)
 
+        # copies over active entries (not tombstones) from previous to new table
         for i in range(prev_buckets.length()):
             entry = prev_buckets[i]
             if entry is not None and entry.is_tombstone is False:
@@ -174,29 +185,27 @@ class HashMap:
         """
 
         # initial search
-        index = self.calc_index(key)
-        if self._buckets[index] is None:
+        i = self.calc_index(key)
+        if self._buckets[i] is None:
             return None
-        elif self._buckets[index].key == key and self._buckets[index].is_tombstone is False:
-            return self._buckets[index].value
+        elif self._buckets[i].key == key and self._buckets[i].is_tombstone is False:
+            return self._buckets[i].value
         else:
             # quadratic probing starts after 1st search attempt fails
             increment = 1
-            quad_index = self.quad_probe(index, increment)
-            while self._buckets[quad_index] is not None:
-                # if self._buckets[quad_index].is_tombstone is True:
-                #     return None
-                if self._buckets[quad_index].key == key:
-                    return self._buckets[quad_index].value
+            quad_i = self.quad_probe(i, increment)
+            while self._buckets[quad_i] is not None:
+                if self._buckets[quad_i].key == key and self._buckets[quad_i].is_tombstone is False:
+                    return self._buckets[quad_i].value
                 increment += 1
-                quad_index = self.quad_probe(index, increment)
+                quad_i = self.quad_probe(i, increment)
 
+        # when an empty slot in the table is reached
         return None
 
     def contains_key(self, key: str) -> bool:
-        """Checks if a given key is in the hash map.
-                Return true if key exists. Otherwise, False.
-                """
+        """ Return true if key exists in hashmap. Otherwise, False.
+        """
         if self.get(key) is not None:
             return True
         else:
@@ -210,6 +219,7 @@ class HashMap:
             return
         elif self._buckets[index].key == key:
             if self._buckets[index].is_tombstone is False:
+                # updates tombstone flag to indicate value is "removed"
                 self._buckets[index].is_tombstone = True
                 self._size -= 1
             else:
@@ -221,6 +231,7 @@ class HashMap:
             while self._buckets[quad_index] is not None:
                 if self._buckets[quad_index].key == key:
                     if self._buckets[quad_index].is_tombstone is False:
+                        # updates tombstone flag to indicate value is "removed"
                         self._buckets[quad_index].is_tombstone = True
                         self._size -= 1
                         break
@@ -230,8 +241,8 @@ class HashMap:
                 quad_index = self.quad_probe(index, increment)
 
     def clear(self) -> None:
-        """Clears the contents of the hash map. Capacity is not affected.
-                """
+        """Clears the contents. Capacity is not affected.
+        """
         for i in range(self._capacity):
             if self._buckets[i] is not None:
                 self._buckets[i] = None
@@ -241,15 +252,16 @@ class HashMap:
         """Returns a dynamic array where each index contains a tuple of a
         key/value pair stored in the hash map. Order does not matter.
         """
-        da_new = DynamicArray()
+        da = DynamicArray()
         for i in range(self._capacity):
-            value = self._buckets[i]
-            if value is None:
+            entry = self._buckets[i]
+            if entry is None:
                 continue
-            if value.is_tombstone is False:
-                da_new.append((value.key, value.value))
+            # only appends the active entries to array
+            if entry.is_tombstone is False:
+                da.append((entry.key, entry.value))
 
-        return da_new
+        return da
 
     def __iter__(self):
         """ Create iterator for looping through HashMap object
@@ -263,12 +275,14 @@ class HashMap:
         """
         try:
             value = self._buckets[self._index]
+            # ignores inactive hash entries
             while value is None or value.is_tombstone is True:
                 self._index = self._index + 1
                 value = self._buckets[self._index]
         except DynamicArrayException:
             raise StopIteration
 
+        # sets up iterator for next value
         self._index = self._index + 1
 
         return value
@@ -277,7 +291,7 @@ class HashMap:
 # ------------------- BASIC TESTING ---------------------------------------- #
 
 if __name__ == "__main__":
-    '''
+
     print("\nPDF - put example 1")
     print("-------------------")
     m = HashMap(53, hash_function_1)
@@ -333,7 +347,7 @@ if __name__ == "__main__":
         m.put('key' + str(i), i * 100)
         if i % 30 == 0:
             print(m.empty_buckets(), m.get_size(), m.get_capacity())
-    '''
+
     print("\nPDF - resize example 1")
     print("----------------------")
     m = HashMap(23, hash_function_1)
@@ -379,7 +393,7 @@ if __name__ == "__main__":
             if result is False:
                 print(key, "not", capacity, result)
         print(capacity, result, m.get_size(), m.get_capacity(), round(m.table_load(), 2))
-    '''
+
     print("\nPDF - get example 1")
     print("-------------------")
     m = HashMap(31, hash_function_1)
@@ -494,4 +508,3 @@ if __name__ == "__main__":
     print(m)
     for item in m:
         print('K:', item.key, 'V:', item.value)
-    '''
