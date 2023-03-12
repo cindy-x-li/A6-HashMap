@@ -112,27 +112,41 @@ class HashMap:
         if self._buckets[i] is None:
             self._buckets[i] = HashEntry(key, value)
             self._size += 1
-        # tombstones are valid for new entries
-        elif self._buckets[i].is_tombstone is True:
+        # tombstones are valid for new entries that are not inactive keys
+        elif self._buckets[i].key != key and self._buckets[i].is_tombstone is True:
             self._buckets[i].is_tombstone = False
+            self._buckets[i] = HashEntry(key, value)
             self._size += 1
-        # checks for already existing key to update value
-        elif self._buckets[i].key == key and self._buckets[i].is_tombstone is False:
-            self._buckets[i].value = value
-
+        # checks for already existing key
+        elif self._buckets[i].key == key:
+            # key exists but is inactive (is_tombstone)
+            if self._buckets[i].is_tombstone is True:
+                self._buckets[i].is_tombstone = False
+                self._size += 1
+            else:
+                # key exists and value is updated
+                self._buckets[i].value = value
         else:
             # insertion via quadratic probing starts after 1st attempt to insert fails
             increment = 1
             quad_i = self.quad_probe(i, increment)
             while self._buckets[quad_i] is not None:
-                if self._buckets[quad_i].is_tombstone is True:
+                # tombstones are valid for new entries that are not inactive keys
+                if self._buckets[i].key != key and self._buckets[quad_i].is_tombstone is True:
                     # not a tombstone when new value is inserted
                     self._buckets[quad_i].is_tombstone = False
                     break
-                # checks for already existing key to update value
+                # checks for already existing key
                 elif self._buckets[quad_i].key == key:
-                    self._buckets[quad_i].value = value
-                    return
+                    # inactive key exists. Activates entry.
+                    if self._buckets[i].is_tombstone is True:
+                        self._buckets[i].is_tombstone = False
+                        self._size += 1
+                        return
+                    else:
+                        # active key exists and value is updated
+                        self._buckets[quad_i].value = value
+                        return
                 increment += 1
                 quad_i = self.quad_probe(i, increment)
 
