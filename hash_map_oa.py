@@ -132,15 +132,15 @@ class HashMap:
             quad_i = self.quad_probe(i, increment)
             while self._buckets[quad_i] is not None:
                 # tombstones are valid for new entries that are not inactive keys
-                if self._buckets[i].key != key and self._buckets[quad_i].is_tombstone is True:
+                if self._buckets[quad_i].key != key and self._buckets[quad_i].is_tombstone is True:
                     # not a tombstone when new value is inserted
                     self._buckets[quad_i].is_tombstone = False
                     break
                 # checks for already existing key
                 elif self._buckets[quad_i].key == key:
                     # inactive key exists. Activates entry.
-                    if self._buckets[i].is_tombstone is True:
-                        self._buckets[i].is_tombstone = False
+                    if self._buckets[quad_i].is_tombstone is True:
+                        self._buckets[quad_i].is_tombstone = False
                         self._size += 1
                         return
                     else:
